@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Gerador de Senhas com Login</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 40px; }
+    .container { max-width: 500px; margin: auto; text-align: center; }
+    input, button { margin: 10px; padding: 10px; width: 80%; }
+    #senha { font-size: 18px; margin: 20px; padding: 10px; border: 1px solid #333; }
+    #listaSenhas { margin-top: 20px; text-align: left; }
+    #erroLogin { color: red; font-weight: bold; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <!-- Tela de Login -->
+  <div class="container" id="login">
+    <h2>Login</h2>
+    <input type="email" id="email" placeholder="Digite seu email">
+    <input type="password" id="senhaLogin" placeholder="Digite sua senha">
+    <button onclick="entrar()">Entrar</button>
+    <button onclick="mostrarCriarConta()">Criar Conta</button>
+    <div id="erroLogin"></div>
+  </div>
+
+  <!-- Tela de Criar Conta -->
+  <div class="container" id="criarConta" style="display:none;">
+    <h2>Criar Conta</h2>
+    <input type="email" id="novoEmail" placeholder="Digite seu email"><br>
+    <input type="password" id="novaSenha" placeholder="Digite sua senha"><br>
+    <input type="text" id="usuario" placeholder="Nome de usuário"><br>
+    <input type="text" id="redes" placeholder="Redes sociais que utiliza"><br>
+    <button onclick="salvarConta()">Salvar Conta</button>
+    <button onclick="voltarLogin()">Voltar</button>
+  </div>
+
+  <!-- Tela do Gerador -->
+  <div class="container" id="gerador" style="display:none;">
+    <h2>🔐 Gerador de Senhas Fortes</h2>
+    <p id="bemvindo"></p>
+    <input type="text" id="uso" placeholder="Onde vai usar (ex: Instagram)">
+    <button onclick="gerarSenha()">Gerar Senha</button>
+    <div id="senha">Sua senha aparecerá aqui</div>
+    <button onclick="descartar()">Descartar</button>
+    <button onclick="salvar()">Salvar</button>
+
+    <h3>Senhas Salvas</h3>
+    <div id="listaSenhas"></div>
+    <button onclick="sair()">Sair</button>
+  </div>
+
+  <script>
+    // Função de login
+    function entrar() {
+      let emailDigitado = document.getElementById("email").value;
+      let senhaDigitada = document.getElementById("senhaLogin").value;
+      let emailSalvo = localStorage.getItem("email");
+      let senhaSalva = localStorage.getItem("senhaLogin");
+      let usuario = localStorage.getItem("usuario");
+
+      if(emailSalvo && senhaSalva){
+        if(emailDigitado === emailSalvo && senhaDigitada === senhaSalva){
+          document.getElementById("login").style.display = "none";
+          document.getElementById("gerador").style.display = "block";
+          document.getElementById("bemvindo").innerText = "Bem-vindo, " + usuario + "!";
+          carregarSenhas();
+        } else {
+          document.getElementById("erroLogin").innerText = "Sua senha está incorreta!";
+        }
+      } else {
+        document.getElementById("erroLogin").innerText = "Nenhuma conta encontrada. Crie uma conta primeiro!";
+      }
+    }
+
+    // Mostrar tela de criar conta
+    function mostrarCriarConta(){
+      document.getElementById("login").style.display = "none";
+      document.getElementById("criarConta").style.display = "block";
+    }
+
+    // Voltar para login
+    function voltarLogin(){
+      document.getElementById("criarConta").style.display = "none";
+      document.getElementById("login").style.display = "block";
+    }
+
+    // Salvar nova conta
+    function salvarConta(){
+      let email = document.getElementById("novoEmail").value;
+      let senha = document.getElementById("novaSenha").value;
+      let usuario = document.getElementById("usuario").value;
+      let redes = document.getElementById("redes").value;
+
+      if(email && senha && usuario){
+        localStorage.setItem("email", email);
+        localStorage.setItem("senhaLogin", senha);
+        localStorage.setItem("usuario", usuario);
+        localStorage.setItem("redes", redes);
+        alert("Conta criada com sucesso!");
+        voltarLogin();
+      } else {
+        alert("Preencha todos os campos obrigatórios!");
+      }
+    }
+
+    // Gerador de senhas
+    function gerarSenha() {
+      let caracteres = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()";
+      let senha = "";
+      for (let i = 0; i < 12; i++) {
+        senha += caracteres.charAt(Math.floor(Math.random() * caracteres.length));
+      }
+      document.getElementById("senha").innerText = senha;
+    }
+
+    function descartar() {
+      document.getElementById("senha").innerText = "Senha descartada. Gere outra!";
+    }
+
+    function salvar() {
+      let senha = document.getElementById("senha").innerText;
+      let uso = document.getElementById("uso").value;
+      if (senha && uso && !senha.includes("descartada")) {
+        let lista = JSON.parse(localStorage.getItem("senhas")) || [];
+        lista.push({uso: uso, senha: senha});
+        localStorage.setItem("senhas", JSON.stringify(lista));
+        carregarSenhas();
+      } else {
+        alert("Digite onde vai usar e gere uma senha válida!");
+      }
+    }
+
+    function carregarSenhas(){
+      let lista = JSON.parse(localStorage.getItem("senhas")) || [];
+      let div = document.getElementById("listaSenhas");
+      div.innerHTML = "";
+      lista.forEach(item => {
+        let p = document.createElement("p");
+        p.textContent = item.uso + " → " + item.senha;
+        div.appendChild(p);
+      });
+    }
+
+    function sair(){
+      document.getElementById("gerador").style.display = "none";
+      document.getElementById("login").style.display = "block";
+      document.getElementById("erroLogin").innerText = "";
+      document.getElementById("email").value = "";
+      document.getElementById("senhaLogin").value = "";
+    }
+  </script>
+</body>
+</html>
